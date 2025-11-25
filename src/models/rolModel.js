@@ -2,14 +2,15 @@
 import { supabase } from "../config/supabaseClient.js";
 
 export const RolModel = {
-  // Obtener todos los roles
   async getAll() {
-    const { data, error } = await supabase.from("rol").select("*");
+    const { data, error } = await supabase
+      .from("rol")
+      .select("*")
+      .order("id_rol");
     if (error) throw error;
     return data;
   },
 
-  // Obtener un rol por ID
   async getById(id_rol) {
     const { data, error } = await supabase
       .from("rol")
@@ -20,30 +21,42 @@ export const RolModel = {
     return data;
   },
 
-  // Crear un nuevo rol
-  async create({ nombre_rol, descripcion }) {
+  async getByNombre(nombre_rol) {
     const { data, error } = await supabase
       .from("rol")
-      .insert([{ nombre_rol, descripcion }])
-      .select();
+      .select("*")
+      .eq("nombre_rol", nombre_rol)
+      .single();
     if (error) throw error;
-    return data[0];
+    return data;
   },
 
-  // Actualizar un rol existente
-  async update(id_rol, { nombre_rol, descripcion }) {
+  async create(rol) {
     const { data, error } = await supabase
       .from("rol")
-      .update({ nombre_rol, descripcion })
+      .insert([rol])
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async update(id_rol, updates) {
+    const { data, error } = await supabase
+      .from("rol")
+      .update(updates)
       .eq("id_rol", id_rol)
-      .select();
+      .select()
+      .single();
     if (error) throw error;
-    return data[0];
+    return data;
   },
 
-  // Eliminar un rol
   async remove(id_rol) {
-    const { error } = await supabase.from("rol").delete().eq("id_rol", id_rol);
+    const { error } = await supabase
+      .from("rol")
+      .delete()
+      .eq("id_rol", id_rol);
     if (error) throw error;
     return { message: "Rol eliminado correctamente" };
   },
