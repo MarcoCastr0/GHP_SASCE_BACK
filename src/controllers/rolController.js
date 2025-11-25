@@ -24,8 +24,10 @@ export const RolController = {
   async crearRol(req, res) {
     try {
       const { nombre_rol, descripcion } = req.body;
-      if (!nombre_rol)
+      
+      if (!nombre_rol) {
         return res.status(400).json({ error: "El nombre del rol es obligatorio" });
+      }
 
       const nuevoRol = await RolModel.create({ nombre_rol, descripcion });
       res.status(201).json(nuevoRol);
