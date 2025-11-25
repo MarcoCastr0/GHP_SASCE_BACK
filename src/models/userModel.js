@@ -9,7 +9,7 @@ export const crearUsuario = async (usuario) => {
   }
 
   const { data, error } = await supabase
-    .from("usuarios")
+    .from("usuario")  // Cambiado de "usuarios" a "usuario"
     .insert([usuario])
     .select(`
       *,
@@ -34,7 +34,7 @@ export const crearUsuario = async (usuario) => {
 // Obtener todos los usuarios con información del rol
 export const obtenerUsuarios = async () => {
   const { data, error } = await supabase
-    .from("usuarios")
+    .from("usuario")  // Cambiado de "usuarios" a "usuario"
     .select(`
       *,
       rol: id_rol (*)
@@ -47,7 +47,7 @@ export const obtenerUsuarios = async () => {
 // Obtener usuario por ID con rol
 export const obtenerUsuarioPorId = async (id) => {
   const { data, error } = await supabase
-    .from("usuarios")
+    .from("usuario")  // Cambiado de "usuarios" a "usuario"
     .select(`
       *,
       rol: id_rol (*)
@@ -66,7 +66,7 @@ export const actualizarUsuario = async (id, nuevosDatos) => {
   }
 
   const { data, error } = await supabase
-    .from("usuarios")
+    .from("usuario")  // Cambiado de "usuarios" a "usuario"
     .update(nuevosDatos)
     .eq("id_usuario", id)
     .select(`
@@ -91,7 +91,7 @@ export const actualizarUsuario = async (id, nuevosDatos) => {
 // Eliminar usuario (solo desactiva, no elimina físicamente)
 export const eliminarUsuario = async (id) => {
   const { data, error } = await supabase
-    .from("usuarios")
+    .from("usuario")  // Cambiado de "usuarios" a "usuario"
     .update({ esta_activo: false })
     .eq("id_usuario", id)
     .select();
@@ -103,7 +103,7 @@ export const eliminarUsuario = async (id) => {
 // Activar usuario
 export const activarUsuario = async (id) => {
   const { data, error } = await supabase
-    .from("usuarios")
+    .from("usuario")  // Cambiado de "usuarios" a "usuario"
     .update({ esta_activo: true })
     .eq("id_usuario", id)
     .select();
