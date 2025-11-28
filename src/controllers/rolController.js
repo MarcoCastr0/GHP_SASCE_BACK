@@ -1,9 +1,16 @@
-// src/controllers/rolController.js
-import { RolModel } from "../models/rolModel.js";
+import { 
+  findRolByName, 
+  getAll, 
+  getById, 
+  create, 
+  update, 
+  remove 
+} from "../models/rolModel.js";
 
 export const obtenerRoles = async (req, res) => {
   try {
-    const roles = await RolModel.getAll();
+    const { data: roles, error } = await getAll();
+    if (error) throw error;
     res.status(200).json(roles);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -12,8 +19,8 @@ export const obtenerRoles = async (req, res) => {
 
 export const obtenerRolPorId = async (req, res) => {
   try {
-    const rol = await RolModel.getById(req.params.id);
-    if (!rol) return res.status(404).json({ error: "Rol no encontrado" });
+    const { data: rol, error } = await getById(req.params.id);
+    if (error || !rol) return res.status(404).json({ error: "Rol no encontrado" });
     res.status(200).json(rol);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -28,7 +35,18 @@ export const crearRol = async (req, res) => {
       return res.status(400).json({ error: "El nombre del rol es obligatorio" });
     }
 
-    const nuevoRol = await RolModel.create({ nombre_rol, descripcion });
+    // Verificar si ya existe
+    const { data: rolExist } = await findRolByName(nombre_rol);
+    if (rolExist) {
+      return res.status(409).json({ error: "Rol ya existe" });
+    }
+
+    const { data: nuevoRol, error } = await create({ 
+      nombre_rol, 
+      descripcion 
+    });
+    if (error) throw error;
+    
     res.status(201).json(nuevoRol);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -38,10 +56,11 @@ export const crearRol = async (req, res) => {
 export const actualizarRol = async (req, res) => {
   try {
     const { nombre_rol, descripcion } = req.body;
-    const rolActualizado = await RolModel.update(req.params.id, {
+    const { data: rolActualizado, error } = await update(req.params.id, {
       nombre_rol,
       descripcion,
     });
+    if (error) throw error;
     res.status(200).json(rolActualizado);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -50,8 +69,9 @@ export const actualizarRol = async (req, res) => {
 
 export const eliminarRol = async (req, res) => {
   try {
-    const result = await RolModel.remove(req.params.id);
-    res.status(200).json(result);
+    const { data: result, error } = await remove(req.params.id);
+    if (error) throw error;
+    res.status(200).json({ message: "Rol eliminado", data: result });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
