@@ -1,21 +1,21 @@
 // src/routes/userRoutes.js
 import express from "express";
 import {
-  getUsuarios,
-  getUsuarioPorId,
-  postUsuario,
-  putUsuario,
-  deleteUsuario,
-  activateUsuario,
+  createUserJWT,
+  getAllUsersJWT,
+  desactivarUsuarioJWT,
+  activarUsuarioJWT,
 } from "../controllers/userController.js";
+import { verifyJWT, requireAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", getUsuarios);
-router.get("/:id", getUsuarioPorId);
-router.post("/", postUsuario);
-router.put("/:id", putUsuario);
-router.delete("/:id", deleteUsuario);
-router.patch("/:id/activate", activateUsuario);
+router.use(verifyJWT);
+router.use(requireAdmin);
+
+router.get("/", getAllUsersJWT);
+router.post("/", createUserJWT);
+router.patch("/:id/desactivar", desactivarUsuarioJWT);
+router.patch("/:id/activar", activarUsuarioJWT);
 
 export default router;
