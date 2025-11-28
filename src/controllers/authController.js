@@ -2,6 +2,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { findUserByEmail } from "../models/userModel.js";
+import { registrarAuditoria } from "../models/auditoriaModel.js";
 
 export const login = async (req, res) => {
   try {
@@ -26,6 +27,13 @@ export const login = async (req, res) => {
       });
     }
 
+    // Verificar que el usuario esté activo
+    if (foundUser.esta_activo === false) {
+      return res.status(403).json({
+        message: "Usuario inactivo. Contacte al administrador.",
+      });
+    }
+
     console.log("Campos usuario:", Object.keys(foundUser));
     console.log("hash_contrasena existe:", !!foundUser.hash_contrasena);
 
@@ -35,7 +43,10 @@ export const login = async (req, res) => {
       });
     }
 
-    const matchPassword = await bcrypt.compare(password, foundUser.hash_contrasena);
+    const matchPassword = await bcrypt.compare(
+      password,
+      foundUser.hash_contrasena
+    );
     console.log("Password match:", matchPassword);
 
     if (!matchPassword) {
@@ -44,6 +55,7 @@ export const login = async (req, res) => {
       });
     }
 
+    // Generar token con rol
     const accessToken = jwt.sign(
       {
         UserID: foundUser.id_usuario,
@@ -54,6 +66,18 @@ export const login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "24h" }
     );
+
+    // Registrar auditoría de LOGIN
+    await registrarAuditoria({
+      id_usuario: foundUser.id_usuario,
+      tipo_accion: "LOGIN",
+      tipo_entidad: "USUARIO",
+      id_entidad: foundUser.id_usuario,
+      valores_nuevos: {
+        correo: foundUser.correo,
+        id_rol: foundUser.id_rol,
+      },
+    });
 
     return res.status(200).json({
       success: true,
