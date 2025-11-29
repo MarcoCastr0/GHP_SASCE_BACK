@@ -1,33 +1,37 @@
-import express from "express"
-import cors from "cors"
-import dotenv from "dotenv"
+// src/app.js
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
 
-dotenv.config();  // ← SOLO UNA VEZ
+import authRoutes from "./routes/authRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import grupoEstudianteRoutes from "./routes/grupoEstudianteRoutes.js";
 
-import rolRoutes from "./routes/rolRoutes.js"
-import userRoutes from "./routes/userRoutes.js"
+dotenv.config();
 
-import authRoutes from './routes/authRoutes.js';
+const app = express();
 
-const app = express()
-app.use(cors())
-app.use(express.json())
+app.use(cors());
+app.use(express.json());
 
-// TUS RUTAS EXISTENTES (sin cambios)
-app.use("/api/roles", rolRoutes)
-app.use("/api/usuarios", userRoutes)
+// Rutas de autenticación
+app.use("/api/auth", authRoutes);
 
+// Rutas de administración de usuarios (CU1, solo admin)
+app.use("/api/admin/users", userRoutes);
 
-// NUEVAS RUTAS JWT (al final)
-app.use('/api/auth', authRoutes);        // POST /api/auth/login
-app.use('/api/admin/users', userRoutes);  // GET/POST /api/admin/users (protegidas admin)
+// Rutas de coordinador para grupos de estudiantes (CU3)
+app.use("/api/coordinador/grupos", grupoEstudianteRoutes);
 
-// Error handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Error del servidor' });
+// Health check / raíz
+app.get("/", (req, res) => {
+  res.send("API GHP-SASCE - Backend en ejecución");
 });
 
-app.get("/", (req, res) => res.send("🚀 API GHP_SASCE (Supabase) - Sistema de Asignación de Salones"))
+// Manejador de errores genérico
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: "Error del servidor" });
+});
 
-export default app
+export default app;
