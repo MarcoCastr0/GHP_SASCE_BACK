@@ -4,9 +4,6 @@ import jwt from "jsonwebtoken";
 export const verifyJWT = (req, res, next) => {
   const authHeader = req.headers.authorization || req.headers.Authorization;
 
-  console.log("=== verifyJWT ===");
-  console.log("authHeader recibido:", authHeader);
-
   if (!authHeader?.startsWith("Bearer ")) {
     return res.status(401).json({ message: "Token requerido" });
   }
@@ -15,12 +12,9 @@ export const verifyJWT = (req, res, next) => {
 
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) {
-      console.log("Error al verificar token:", err.message);
       return res.status(403).json({ message: "Token inválido" });
     }
-    console.log("Token válido, payload:", decoded);
-    // decoded: { UserID, username, correo, id_rol, iat, exp }
-    req.user = decoded;
+    req.user = decoded; // { UserID, username, correo, id_rol }
     next();
   });
 };
@@ -35,12 +29,22 @@ export const requireAdmin = (req, res, next) => {
   next();
 };
 
-// COORDINADOR = id_rol = 2
+// COORDINADOR = id_rol = 2 (ya lo tienes)
 export const requireCoordinador = (req, res, next) => {
   if (req.user.id_rol !== 2) {
     return res
       .status(403)
       .json({ message: "Requiere rol COORDINADOR (id_rol = 2)" });
+  }
+  next();
+};
+
+// NUEVO: COORDINADOR_INFRAESTRUCTURA = id_rol = 3 (ajusta si es otro)
+export const requireCoordinadorInfra = (req, res, next) => {
+  if (req.user.id_rol !== 3) {
+    return res.status(403).json({
+      message: "Requiere rol COORDINADOR_INFRAESTRUCTURA (id_rol = 3)",
+    });
   }
   next();
 };
