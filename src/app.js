@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import grupoEstudianteRoutes from "./routes/grupoEstudianteRoutes.js";
+import salonRoutes from "./routes/salonRoutes.js";
 
 dotenv.config();
 
@@ -14,21 +15,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Rutas de autenticación
 app.use("/api/auth", authRoutes);
-
-// Rutas de administración de usuarios (CU1, solo admin)
 app.use("/api/admin/users", userRoutes);
-
-// Rutas de coordinador para grupos de estudiantes (CU3)
 app.use("/api/coordinador/grupos", grupoEstudianteRoutes);
 
-// Health check / raíz
+// NUEVO: salones para coordinador de infraestructura
+app.use("/api/coordinador-infra/salones", salonRoutes);
+
 app.get("/", (req, res) => {
-  res.send("API GHP-SASCE - Backend en ejecución");
+  res.send("🚀 API GHP_SASCE (Supabase) - Sistema de Asignación de Salones");
 });
 
-// Manejador de errores genérico
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: "Error del servidor" });
