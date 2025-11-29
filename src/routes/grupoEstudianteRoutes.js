@@ -4,6 +4,9 @@ import {
   getGruposJWT,
   createGrupoJWT,
   getNivelesAcademicosJWT,
+  getGrupoByIdJWT,
+  updateGrupoJWT,
+  desactivarGrupoJWT,
 } from "../controllers/grupoEstudianteController.js";
 import {
   verifyJWT,
@@ -12,17 +15,18 @@ import {
 
 const router = express.Router();
 
-// Todas las rutas de este módulo requieren JWT y rol COORDINADOR
+// Todas las rutas requieren JWT y rol COORDINADOR
 router.use(verifyJWT);
 router.use(requireCoordinador);
 
-// Listar grupos de estudiantes
+// CU3
 router.get("/", getGruposJWT);
-
-// Registrar nuevo grupo
 router.post("/", createGrupoJWT);
-
-// Obtener niveles académicos (para el formulario de grupos)
 router.get("/niveles-academicos", getNivelesAcademicosJWT);
+
+// CU4
+router.get("/:id", getGrupoByIdJWT);          // Ver detalle
+router.put("/:id", updateGrupoJWT);           // Editar
+router.patch("/:id/desactivar", desactivarGrupoJWT); // Desactivar
 
 export default router;
