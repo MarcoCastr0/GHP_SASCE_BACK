@@ -5,7 +5,13 @@ import {
   createSalonJWT,
   getEdificiosJWT,
   getTiposRecursoJWT,
+  getPeriodosAcademicosJWT,
 } from "../controllers/salonController.js";
+import {
+  getOcupacionesSalonJWT,
+  createOcupacionSalonJWT,
+  deleteOcupacionSalonJWT,
+} from "../controllers/disponibilidadSalonController.js";
 import {
   verifyJWT,
   requireCoordinadorInfra,
@@ -17,16 +23,16 @@ const router = express.Router();
 router.use(verifyJWT);
 router.use(requireCoordinadorInfra);
 
-// Listar salones
+// CU5: Gestión de salones
 router.get("/", getSalonesJWT);
-
-// Registrar nuevo salón
 router.post("/", createSalonJWT);
-
-// Obtener edificios (para formulario)
 router.get("/edificios", getEdificiosJWT);
-
-// Obtener tipos de recurso (para formulario)
 router.get("/tipos-recurso", getTiposRecursoJWT);
+
+// CU6: Gestión de disponibilidad horaria
+router.get("/periodos-academicos", getPeriodosAcademicosJWT);
+router.get("/:id/ocupacion", getOcupacionesSalonJWT);
+router.post("/:id/ocupacion", createOcupacionSalonJWT);
+router.delete("/ocupacion/:id_ocupacion", deleteOcupacionSalonJWT);
 
 export default router;

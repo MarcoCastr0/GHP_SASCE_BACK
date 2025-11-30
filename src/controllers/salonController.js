@@ -117,3 +117,18 @@ export const createSalonJWT = async (req, res) => {
     return res.status(500).json({ message: err.message });
   }
 };
+// src/controllers/salonController.js (agregar al final)
+import { getAllPeriodosAcademicos } from "../models/periodoAcademicoModel.js";
+
+// ... (tus funciones existentes getSalonesJWT, createSalonJWT, getEdificiosJWT, getTiposRecursoJWT)
+
+// Nuevo: obtener periodos académicos
+export const getPeriodosAcademicosJWT = async (req, res) => {
+  try {
+    const { data, error } = await getAllPeriodosAcademicos();
+    if (error) return res.status(500).json({ message: error.message });
+    return res.status(200).json(data);
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
