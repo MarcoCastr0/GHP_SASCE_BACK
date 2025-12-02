@@ -8,6 +8,8 @@ import userRoutes from "./routes/userRoutes.js";
 import grupoEstudianteRoutes from "./routes/grupoEstudianteRoutes.js";
 import salonRoutes from "./routes/salonRoutes.js";
 import profesorRoutes from "./routes/profesorRoutes.js";
+import disponibilidadProfesorRoutes from "./routes/disponibilidadProfesorRoutes.js";
+
 
 dotenv.config();
 
@@ -24,6 +26,8 @@ app.use("/api/coordinador-infra/salones", salonRoutes);
 
 // NUEVO: gestión de profesores para coordinador académico
 app.use("/api/coordinador/profesores", profesorRoutes);
+app.use("/api/disponibilidad-profesor", disponibilidadProfesorRoutes);
+
 
 app.get("/", (req, res) => {
   res.send("🚀 API GHP_SASCE (Supabase) - Sistema de Asignación de Salones");
