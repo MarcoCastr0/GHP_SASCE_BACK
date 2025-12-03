@@ -6,7 +6,7 @@ import {
   checkConflictosOcupacion,
   checkConflictosAsignacion,
 } from "../models/ocupacionSalonModel.js";
-import { getGrupoById } from "../models/grupoEstudianteModel.js"; // para validar que el salón existe (opcional, o usar salonModel)
+import { getSalonById } from "../models/salonModel.js";
 import { registrarAuditoria } from "../models/auditoriaModel.js";
 
 // Obtener ocupaciones de un salón
@@ -14,6 +14,12 @@ export const getOcupacionesSalonJWT = async (req, res) => {
   try {
     const { id } = req.params; // id_salon
     const { id_periodo_academico, dia_semana } = req.query;
+
+    // Verificar que el salón existe
+    const { data: salon, error: errorSalon } = await getSalonById(id);
+    if (errorSalon || !salon) {
+      return res.status(404).json({ message: "Salón no encontrado" });
+    }
 
     const filtros = {};
     if (id_periodo_academico) {
@@ -26,7 +32,14 @@ export const getOcupacionesSalonJWT = async (req, res) => {
     const { data, error } = await getOcupacionesSalon(id, filtros);
     if (error) return res.status(500).json({ message: error.message });
 
-    return res.status(200).json(data);
+    return res.status(200).json({
+      salon: {
+        id_salon: salon.id_salon,
+        codigo_salon: salon.codigo_salon,
+        nombre_salon: salon.nombre_salon,
+      },
+      ocupaciones: data,
+    });
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }
@@ -38,6 +51,12 @@ export const createOcupacionSalonJWT = async (req, res) => {
     const { id } = req.params; // id_salon
     const { id_periodo_academico, dia_semana, hora_inicio, hora_fin, motivo } =
       req.body;
+
+    // Verificar que el salón existe
+    const { data: salon, error: errorSalon } = await getSalonById(id);
+    if (errorSalon || !salon) {
+      return res.status(404).json({ message: "Salón no encontrado" });
+    }
 
     // Validaciones de campos obligatorios
     if (
@@ -93,7 +112,7 @@ export const createOcupacionSalonJWT = async (req, res) => {
     }
 
     if (conflictosOcup.length > 0) {
-      return res.status(400).json({
+      return res.status(409).json({
         message:
           "Ya existe una ocupación en el rango horario seleccionado para este salón",
         conflictos: conflictosOcup,
@@ -115,7 +134,7 @@ export const createOcupacionSalonJWT = async (req, res) => {
     }
 
     if (conflictosAsig.length > 0) {
-      return res.status(400).json({
+      return res.status(409).json({
         message:
           "Ya existe una asignación (clase programada) en el rango horario seleccionado para este salón",
         conflictos: conflictosAsig,
