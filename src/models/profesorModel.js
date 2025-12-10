@@ -1,7 +1,9 @@
 // src/models/profesorModel.js
 import { supabase } from "../config/supabaseClient.js";
 
-// Listar todos los profesores con sus especialidades
+// ─────────────────────────────────────────────
+// LISTAR TODOS LOS PROFESORES
+// ─────────────────────────────────────────────
 export const getAllProfesores = async () => {
   const { data, error } = await supabase
     .from("profesor")
@@ -26,7 +28,7 @@ export const getAllProfesores = async () => {
 
   if (error) return { data: null, error };
 
-  // Cargar especialidades de cada profesor
+  // Cargar especialidades
   const profesoresConEspecialidades = await Promise.all(
     (data || []).map(async (prof) => {
       const { data: especialidades } = await supabase
@@ -44,7 +46,9 @@ export const getAllProfesores = async () => {
   return { data: profesoresConEspecialidades, error: null };
 };
 
-// Obtener un profesor por ID con detalles completos
+// ─────────────────────────────────────────────
+// OBTENER PROFESOR POR ID
+// ─────────────────────────────────────────────
 export const getProfesorById = async (id_profesor) => {
   const { data, error } = await supabase
     .from("profesor")
@@ -86,38 +90,58 @@ export const getProfesorById = async (id_profesor) => {
   };
 };
 
-// Crear profesor (requiere ya haber creado el usuario)
+// ─────────────────────────────────────────────
+// CREAR PROFESOR (YA EXISTE USUARIO)
+// ─────────────────────────────────────────────
 export const createProfesor = async (profesorData) => {
-  const { data, error } = await supabase
-    .from("profesor")
-    .insert([profesorData])
-    .select(
-      `
-      id_profesor,
-      id_usuario,
-      numero_identificacion,
-      biografia,
-      cualificaciones,
-      url_hoja_vida,
-      fecha_creacion
-    `
-    )
-    .single();
+  try {
+    const { especialidades, ...datosProfesor } = profesorData;
 
-  if (error) {
-    if (error.code === "23505" && error.details?.includes("numero_identificacion")) {
-      return {
-        data: null,
-        error: { message: "El número de identificación ya está registrado" },
-      };
+    // 1. Crear el profesor
+    const { data, error } = await supabase
+      .from("profesor")
+      .insert([datosProfesor])
+      .select("id_profesor, id_usuario, numero_identificacion")
+      .single();
+
+    if (error) {
+      if (error.code === "23505" && error.details?.includes("numero_identificacion")) {
+        return {
+          data: null,
+          error: { message: "El número de identificación ya está registrado" },
+        };
+      }
+      return { data: null, error };
     }
-    return { data: null, error };
-  }
 
-  return { data, error: null };
+    const id_profesor = data.id_profesor;
+
+    // 2. Insertar especialidades si existen
+    if (especialidades?.length > 0) {
+      const especialidadesFormateadas = especialidades.map((nombre) => ({
+        id_profesor,
+        nombre_especialidad: nombre,
+        nivel_competencia: "Básico", // Puedes cambiarlo
+      }));
+
+      const { error: errorEspecialidad } = await supabase
+        .from("especialidad_profesor")
+        .insert(especialidadesFormateadas);
+
+      if (errorEspecialidad) {
+        return { data: null, error: errorEspecialidad };
+      }
+    }
+
+    return { data, error: null };
+  } catch (err) {
+    return { data: null, error: err };
+  }
 };
 
-// Actualizar datos del profesor
+// ─────────────────────────────────────────────
+// ACTUALIZAR PROFESOR
+// ─────────────────────────────────────────────
 export const updateProfesor = async (id_profesor, nuevosDatos) => {
   const { data, error } = await supabase
     .from("profesor")
@@ -152,7 +176,9 @@ export const updateProfesor = async (id_profesor, nuevosDatos) => {
   return { data, error: null };
 };
 
-// Desactivar profesor (baja lógica en usuario)
+// ─────────────────────────────────────────────
+// DESACTIVAR PROFESOR (BAJA LÓGICA)
+// ─────────────────────────────────────────────
 export const desactivarProfesor = async (id_usuario) => {
   const { data, error } = await supabase
     .from("usuario")
